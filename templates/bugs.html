@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/slider.css' %}">
+{% endblock %}
+
+{% block content %}
+    <input type="text" id="monthSlider" style="width: 350px"/>
+
+    <h3>Available {{ critter_type }} in <span data-bind="text: selected_month"></span></h3>
+
+    <div data-bind="foreach: columns">
+        <div class="row" data-bind="foreach: $data">
+            <div class="col-md-2 text-center critter">
+                <a data-bind="text: fields.name, attr: {href: '/critters/bug/'+fields.entity_id}"></a><br />
+                <img data-bind="attr:{src: 'data:image/png;base64, '+fields.image_64}"/><br />
+                <span data-bind="text: fields.location"></span><br />
+                <span data-bind="text: fields.active_time"></span><br />
+                <!-- span data-bind="text: fields.active_months"></span><br / -->
+                <span data-bind="text: fields.price"></span><img src="/static/images/BellCoin.png" class="bell" />
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript_compress %}
+<script type="text/javascript" src="{% static 'js/bootstrap-slider.js' %}"></script>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+    $(function(){
+        var critterModel = new CritterViewModel();
+
+        $("#monthSlider").slider({
+            ticks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            ticks_labels: moment.monthsShort(),
+            ticks_snap_bounds: 30,
+            value: moment().month(),
+            tooltip: 'hide'
+        }).on("change", function(evt){
+            critterModel.selected_month(moment.months()[evt.value.newValue]);
+            critterModel.selected_month_id(evt.value.newValue);
+        });
+
+        function CritterViewModel(){
+            var self = this;
+            var numCols = 6;
+            self.selected_month = ko.observable(moment.months()[moment().month()]);
+            self.selected_month_id = ko.observable(moment().month());
+            // self.selected_time = '8:13 AM';
+            self.bugs = ko.observableArray({{ critters_json|safe }});
+
+            self.columns = ko.computed(function() {
+                var source = _.filter(self.bugs(), function(o){
+                    var am = o.fields.active_months;
+                    if(am.includes(self.selected_month_id())){
+                        return o;
+                    }
+                });
+                if (source && source.length) {
+                    var cols = [];
+                    for (var i=0; i < source.length; i+=numCols) {
+                        cols.push(source.slice(i,i+numCols));
+                    }
+                    return cols;
+                }
+            });
+        }
+        ko.applyBindings(critterModel);
+    });
+</script>
+{% endblock %}

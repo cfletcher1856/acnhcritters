@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for fish in fishes %}
+        {% if forloop.counter == 1 or forloop.counter0|divisibleby:6 %}
+            <div class="row">
+        {% endif %}
+        <div class="col-2 text-center">
+            {{ fish.name }}<br />
+            <img src="data:image/png;base64, {{ fish.image_64 }}" alt="{{ fish.name }}" />
+        </div>
+        {% if forloop.counter|divisibleby:6 %}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
