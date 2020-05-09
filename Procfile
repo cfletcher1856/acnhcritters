@@ -1,1 +1,1 @@
-web: gunicorn acnhcritters.wsgi --log-file -
+web: gunicorn wsgi --log-file -
